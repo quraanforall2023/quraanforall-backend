@@ -14,6 +14,7 @@ model File {
   id        String @id @default(auto()) @map("_id") @db.ObjectId
   url       String
   fileType  String
+  lang      String
   downloads Int @default(0)
 }
 model Impression {

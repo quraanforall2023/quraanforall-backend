@@ -6,6 +6,7 @@ import {
   Get,
   Param,
   NotFoundException,
+  Body,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FirebaseService } from '../firebase.service';
@@ -20,11 +21,14 @@ export class FilesController {
 
   @Post('')
   @UseInterceptors(FilesInterceptor('files'))
-  async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
+  async uploadFiles(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: { lang: string },
+  ) {
     const uploadPromises = files.map(async (file) => {
       const url = await this.firebaseService.uploadFile(file);
       await this.prismaService.file.create({
-        data: { url, fileType: file.mimetype },
+        data: { url, fileType: file.mimetype, lang: body.lang },
       });
     });
 
