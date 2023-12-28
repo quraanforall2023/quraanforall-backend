@@ -28,23 +28,27 @@ export class FilesController {
     const uploadPromises = files.map(async (file) => {
       const url = await this.firebaseService.uploadFile(file);
       await this.prismaService.file.create({
-        data: { url, fileType: file.mimetype, lang: body.lang },
+        data: {
+          url,
+          fileType: this.categorizeFileType(file.mimetype),
+          lang: body.lang,
+        },
       });
     });
 
     await Promise.all(uploadPromises);
     return { message: 'Files uploaded successfully' };
   }
-  @Get(':fileType')
+  @Get(':fileType') // fileType: img || vid || pdf
   async retrieveFilesByType(@Param('fileType') fileType: string) {
     return this.prismaService.file.findMany({
       where: { fileType },
     });
   }
   @Get('count-downloads/:fileId')
-  async countDownloads(@Param('fileId') fileId: string) {
+  async countDownloads(@Param('fileId') id: string) {
     const file = await this.prismaService.file.findUnique({
-      where: { id: fileId },
+      where: { id },
     });
 
     if (!file) {
@@ -52,11 +56,22 @@ export class FilesController {
     }
 
     await this.prismaService.file.update({
-      where: { id: fileId },
+      where: { id },
       data: { downloads: file.downloads + 1 },
     });
 
     return { message: 'Download counted successfully' };
+  }
+  @Get('count-downloads/all/:fileType') // fileType: img || vid || pdf
+  async countDownloadsGet(@Param('fileType') fileType: string) {
+    const file = await this.prismaService.file.aggregate({
+      where: { fileType },
+      _sum: {
+        downloads: true,
+      },
+    });
+
+    return { data: file };
   }
   @Get('count-impressions/count')
   async countImpressions() {
@@ -66,11 +81,32 @@ export class FilesController {
       throw new NotFoundException('File not found');
     }
 
-    await this.prismaService.file.update({
+    await this.prismaService.impression.update({
       where: { id: impression.id },
-      data: { downloads: impression.count + 1 },
+      data: { count: impression.count + 1 },
     });
 
     return { message: 'Download counted successfully' };
+  }
+  @Get('count-impressions/counter')
+  async countImpressionsGet() {
+    const impression = await this.prismaService.impression.findFirst();
+
+    if (!impression) {
+      throw new NotFoundException('File not found');
+    }
+
+    return { message: impression };
+  }
+  categorizeFileType(mimeType: string): string {
+    if (mimeType.startsWith('video/')) {
+      return 'vid';
+    } else if (mimeType.startsWith('image/')) {
+      return 'img';
+    } else if (mimeType === 'application/pdf') {
+      return 'pdf';
+    } else {
+      return 'other'; // You may want to handle other types as needed
+    }
   }
 }
