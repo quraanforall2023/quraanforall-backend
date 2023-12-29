@@ -7,6 +7,7 @@ import {
   Param,
   NotFoundException,
   Body,
+  Query,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FirebaseService } from '../firebase.service';
@@ -17,7 +18,7 @@ export class FilesController {
   constructor(
     private readonly firebaseService: FirebaseService,
     private readonly prismaService: PrismaService,
-  ) {}
+  ) { }
 
   @Post('')
   @UseInterceptors(FilesInterceptor('files'))
@@ -40,9 +41,9 @@ export class FilesController {
     return { message: 'Files uploaded successfully' };
   }
   @Get(':fileType') // fileType: img || vid || pdf
-  async retrieveFilesByType(@Param('fileType') fileType: string) {
+  async retrieveFilesByType(@Param('fileType') fileType: string, @Query('lang') lang: string) {
     return this.prismaService.file.findMany({
-      where: { fileType },
+      where: { fileType, lang },
     });
   }
   @Get('count-downloads/:fileId')
