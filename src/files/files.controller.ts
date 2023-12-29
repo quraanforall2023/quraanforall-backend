@@ -114,7 +114,7 @@ export class FilesController {
   @Delete('')
   async clearFiles(
   ) {
-    await this.prismaService.file.delete();
+    await this.prismaService.file.deleteMany();
     return { message: 'Files deleted successfully' };
   }
 }
