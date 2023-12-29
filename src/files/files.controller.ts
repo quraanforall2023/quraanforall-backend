@@ -110,4 +110,10 @@ export class FilesController {
       return 'other'; // You may want to handle other types as needed
     }
   }
+  @Delete('')
+  async clearFiles(
+  ) {
+    await this.prismaService.file.delete();
+    return { message: 'Files deleted successfully' };
+  }
 }
