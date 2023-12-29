@@ -4,6 +4,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Get,
+  Delete,
   Param,
   NotFoundException,
   Body,
