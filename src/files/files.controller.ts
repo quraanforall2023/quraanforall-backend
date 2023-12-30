@@ -80,7 +80,12 @@ export class FilesController {
     const impression = await this.prismaService.impression.findFirst();
 
     if (!impression) {
-      throw new NotFoundException('File not found');
+    const impression = await this.prismaService.impression.create({
+      data:{
+        count: 1,
+      }
+    });
+    return { message: 'count updated successfully' };
     }
 
     await this.prismaService.impression.update({
@@ -88,14 +93,14 @@ export class FilesController {
       data: { count: impression.count + 1 },
     });
 
-    return { message: 'Download counted successfully' };
+    return { message: 'count updated successfully' };
   }
   @Get('count-impressions/counter')
   async countImpressionsGet() {
     const impression = await this.prismaService.impression.findFirst();
 
     if (!impression) {
-      throw new NotFoundException('File not found');
+      throw new NotFoundException('not found');
     }
 
     return { message: impression };
